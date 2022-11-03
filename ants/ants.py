@@ -151,7 +151,7 @@ class HarvesterAnt(Ant):
         """
         # BEGIN Problem 1
         "*** YOUR CODE HERE ***"
-        self.gamestate.food += 1
+        gamestate.food += 1
         # END Problem 1
 
 
