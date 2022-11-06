@@ -166,7 +166,8 @@ class ThrowerAnt(Ant):
     damage = 1
     food_cost = 3
     # ADD/OVERRIDE CLASS ATTRIBUTES HERE
-
+    min_range = 0
+    max_range = float('inf')
     def nearest_bee(self, beehive):
         """Return the nearest Bee in a Place that is not the HIVE, connected to
         the ThrowerAnt's Place by following entrances.
@@ -174,11 +175,13 @@ class ThrowerAnt(Ant):
         This method returns None if there is no such Bee (or none in range).
         """
         # BEGIN Problem 3 and 4
+        counter = 0
         ans = self.place
-        while ans.entrance is not None:
-            if ans.bees != [] and ans.name != 'Hive':
+        while ans.entrance is not None and counter <= self.max_range:
+            if ans.bees != [] and ans.name != 'Hive' and counter >= self.min_range:
                 return random_or_none(ans.bees)
             else:
+                counter += 1
                 ans = ans.entrance
         return None # REPLACE THIS LINE
         # END Problem 3 and 4
@@ -208,8 +211,10 @@ class ShortThrower(ThrowerAnt):
     name = 'Short'
     food_cost = 2
     # OVERRIDE CLASS ATTRIBUTES HERE
+    min_range = 0
+    max_range = 3
     # BEGIN Problem 4
-    implemented = False   # Change to True to view in the GUI
+    implemented = True   # Change to True to view in the GUI
     # END Problem 4
 
 class LongThrower(ThrowerAnt):
@@ -218,8 +223,10 @@ class LongThrower(ThrowerAnt):
     name = 'Long'
     food_cost = 2
     # OVERRIDE CLASS ATTRIBUTES HERE
+    min_range = 5
+    max_range = float('inf')
     # BEGIN Problem 4
-    implemented = False   # Change to True to view in the GUI
+    implemented = True   # Change to True to view in the GUI
     # END Problem 4
 
 class FireAnt(Ant):
@@ -230,7 +237,7 @@ class FireAnt(Ant):
     food_cost = 5
     # OVERRIDE CLASS ATTRIBUTES HERE
     # BEGIN Problem 5
-    implemented = False   # Change to True to view in the GUI
+    implemented = True   # Change to True to view in the GUI
     # END Problem 5
 
     def __init__(self, armor=3):
@@ -246,7 +253,18 @@ class FireAnt(Ant):
         """
         # BEGIN Problem 5
         "*** YOUR CODE HERE ***"
-        # END Problem 5
+        my_bees = self.place.bees[:]
+        self.armor -= amount
+        if self.armor <= 0:
+            self.place.remove_insect(self)
+            self.death_callback()
+        for my_bee in my_bees:
+            my_bee.armor -= amount
+            if self.armor <= 0:
+                my_bee.armor -= self.damage
+            if my_bee.armor <= 0:
+                my_bee.place.remove_insect(my_bee)
+                my_bee.death_callback()
 
 class HungryAnt(Ant):
     """HungryAnt will take three turns to digest a Bee in its place.
