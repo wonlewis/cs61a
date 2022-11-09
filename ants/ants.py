@@ -124,11 +124,24 @@ class Ant(Insect):
     def add_to(self, place):
         if place.ant is None:
             place.ant = self
+            Insect.add_to(self, place)
         else:
             # BEGIN Problem 9
-            assert place.ant is None, 'Two ants in {0}'.format(place)
+
+
+            if place.ant.can_contain(self) is False and self.can_contain(place.ant) is False:
+                assert place.ant is None, 'Two ants in {0}'.format(place)
+
+            if place.ant.can_contain(self) is True:
+                self.place = place
+                place.ant.contained_ant = self
+                
+            else:
+                self.contained_ant = place.ant
+                place.ant = self
+                self.place = place
+
             # END Problem 9
-        Insect.add_to(self, place)
 
     def remove_from(self, place):
         if place.ant is self:
@@ -328,6 +341,17 @@ class NinjaAnt(Ant):
 
 # BEGIN Problem 8
 # The WallAnt class
+class WallAnt(Ant):
+
+    name = 'Wall'
+    food_cost = 4
+    damage = 0
+    implemented = True
+
+    def __init__(self, armor=4):
+        """Create an Ant with an ARMOR quantity."""
+        Ant.__init__(self, armor)
+        # END Problem 6
 # END Problem 8
 
 class ContainerAnt(Ant):
@@ -338,11 +362,15 @@ class ContainerAnt(Ant):
     def can_contain(self, other):
         # BEGIN Problem 9
         "*** YOUR CODE HERE ***"
+        if self.contained_ant is None and not isinstance(other, ContainerAnt):
+            return True
+        return False
         # END Problem 9
 
     def contain_ant(self, ant):
         # BEGIN Problem 9
         "*** YOUR CODE HERE ***"
+        self.contained_ant = ant
         # END Problem 9
 
     def remove_ant(self, ant):
@@ -360,9 +388,17 @@ class ContainerAnt(Ant):
             # default to normal behavior
             Ant.remove_from(self, place)
 
+    def reduce_armor(self, amount):
+        self.armor -= amount
+        if self.armor <= 0:
+            self.remove_from(self.place)
+            self.death_callback()
+
     def action(self, gamestate):
         # BEGIN Problem 9
         "*** YOUR CODE HERE ***"
+        if self.contained_ant is not None:
+            return self.contained_ant.action(gamestate)
         # END Problem 9
 
 class BodyguardAnt(ContainerAnt):
@@ -371,8 +407,14 @@ class BodyguardAnt(ContainerAnt):
     name = 'Bodyguard'
     food_cost = 4
     # OVERRIDE CLASS ATTRIBUTES HERE
+    contained_ant = None
     # BEGIN Problem 9
-    implemented = False   # Change to True to view in the GUI
+    def __init__(self, armor=2):
+        """Create an Ant with an ARMOR quantity."""
+        Ant.__init__(self, armor)
+
+        
+    implemented = True   # Change to True to view in the GUI
     # END Problem 9
 
 class TankAnt(ContainerAnt):
