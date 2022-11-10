@@ -424,8 +424,9 @@ class TankAnt(ContainerAnt):
     damage = 1
     food_cost = 6
     # OVERRIDE CLASS ATTRIBUTES HERE
+    contained_ant = None
     # BEGIN Problem 10
-    implemented = False   # Change to True to view in the GUI
+    implemented = True   # Change to True to view in the GUI
     # END Problem 10
 
     def __init__(self, armor=2):
@@ -434,6 +435,21 @@ class TankAnt(ContainerAnt):
     def action(self, gamestate):
         # BEGIN Problem 10
         "*** YOUR CODE HERE ***"
+        my_bees = self.place.bees[:]
+        for my_bee in my_bees:
+            my_bee.armor -= self.damage
+            if my_bee.armor <= 0:
+                my_bee.place.remove_insect(my_bee)
+                my_bee.death_callback()
+        if self.contained_ant is not None:
+            return self.contained_ant.action(gamestate)
+
+
+    def __init__(self, armor=2):
+        """Create an Ant with an ARMOR quantity."""
+        Ant.__init__(self, armor)
+    
+    
         # END Problem 10
 
 class Water(Place):
