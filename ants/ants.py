@@ -53,6 +53,7 @@ class Insect:
 
     damage = 0
     # ADD CLASS ATTRIBUTES HERE
+    is_watersafe = False
 
     def __init__(self, armor, place=None):
         """Create an Insect with an ARMOR amount and a starting PLACE."""
@@ -93,7 +94,6 @@ class Insect:
 
     def remove_from(self, place):
         self.place = None
-
 
     def __repr__(self):
         cname = type(self).__name__
@@ -460,27 +460,42 @@ class Water(Place):
         its armor to 0."""
         # BEGIN Problem 11
         "*** YOUR CODE HERE ***"
+        Place.add_insect(self, insect)
+        if insect.is_watersafe == False:
+            insect.reduce_armor(insect.armor)
         # END Problem 11
 
 # BEGIN Problem 12
 # The ScubaThrower class
+class ScubaThrower(ThrowerAnt):
+    food_cost = 6
+    name = 'Scuba'
+    implemented = True
+    is_watersafe = True
 # END Problem 12
 
 # BEGIN Problem 13
-class QueenAnt(Ant):  # You should change this line
+class QueenAnt(ScubaThrower):  # You should change this line
 # END Problem 13
     """The Queen of the colony. The game is over if a bee enters her place."""
-
     name = 'Queen'
     food_cost = 7
     # OVERRIDE CLASS ATTRIBUTES HERE
+    count = 0
+    imposter = False
     # BEGIN Problem 13
-    implemented = False   # Change to True to view in the GUI
+    implemented = True   # Change to True to view in the GUI
     # END Problem 13
 
     def __init__(self, armor=1):
         # BEGIN Problem 13
         "*** YOUR CODE HERE ***"
+        Ant.__init__(self, armor)
+        if self.__class__.count == 0:
+            self.imposter = False
+            self.__class__.count += 1
+        else:
+            self.imposter = True
         # END Problem 13
 
     def action(self, gamestate):
@@ -491,6 +506,26 @@ class QueenAnt(Ant):  # You should change this line
         """
         # BEGIN Problem 13
         "*** YOUR CODE HERE ***"
+        if self.imposter == True:
+            self.reduce_armor(self.armor)
+        else:
+            """Throw a leaf at the nearest Bee in range."""
+            self.throw_at(self.nearest_bee(gamestate.beehive))
+            ##buff ants behind queen
+            my_place = self.place.exit
+            while my_place is not None:
+                #if place is container ant containing ant within
+                if hasattr(my_place.ant, "contained_ant"):
+                    if my_place.ant.contained_ant is not None:
+                        if not hasattr(my_place.ant.contained_ant, 'buffed'):
+                            my_place.ant.contained_ant.damage = my_place.ant.contained_ant.damage * 2
+                            my_place.ant.contained_ant.buffed = True
+                if hasattr(my_place.ant, "damage") and not hasattr(my_place.ant, "buffed"):
+                    my_place.ant.buffed = True
+                    my_place.ant.damage = my_place.ant.damage * 2
+                my_place = my_place.exit
+
+
         # END Problem 13
 
     def reduce_armor(self, amount):
@@ -499,6 +534,24 @@ class QueenAnt(Ant):  # You should change this line
         """
         # BEGIN Problem 13
         "*** YOUR CODE HERE ***"
+        self.armor -= amount
+        if self.armor <= 0:
+            if self.imposter == False:
+                bees_win()
+            else:
+                self.place.remove_insect(self)
+                self.death_callback()
+
+    def remove_from(self, place):
+        if self.imposter == True:
+            if place.ant is self:
+                place.ant = None
+            elif place.ant is None:
+                assert False, '{0} is not in {1}'.format(self, place)
+            else:
+                # container or other situation
+                place.ant.remove_ant(self)
+            Insect.remove_from(self, place)
         # END Problem 13
 
 
@@ -517,6 +570,7 @@ class Bee(Insect):
 
     name = 'Bee'
     damage = 1
+    is_watersafe = True
     # OVERRIDE CLASS ATTRIBUTES HERE
 
 
