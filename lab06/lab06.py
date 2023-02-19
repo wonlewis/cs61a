@@ -1,4 +1,6 @@
 this_file = 'lab06.py'
+
+
 def make_adder_inc(n):
     """
     >>> adder1 = make_adder_inc(5)
@@ -17,6 +19,7 @@ def make_adder_inc(n):
     "*** YOUR CODE HERE ***"
     counter = 0
     total = 0
+
     def adder(i):
         nonlocal n
         nonlocal counter
@@ -25,6 +28,7 @@ def make_adder_inc(n):
         counter += 1
         return total
     return adder
+
 
 def make_fib():
     """Returns a function that returns the next Fibonacci number
@@ -54,6 +58,7 @@ def make_fib():
     num_2 = 1
     first_pass = False
     second_pass = False
+
     def next_num():
         nonlocal num_1
         nonlocal num_2
@@ -74,6 +79,8 @@ def make_fib():
     return next_num
 
 # Generators
+
+
 def naturals():
     """A generator function that yields the infinite sequence of natural
     numbers, starting at 1.
@@ -89,6 +96,7 @@ def naturals():
         yield i
         i += 1
 
+
 def scale(it, multiplier):
     """Yield elements of the iterable it scaled by a number multiplier.
 
@@ -103,7 +111,8 @@ def scale(it, multiplier):
     [2, 4, 6, 8, 10]
     """
     "*** YOUR CODE HERE ***"
-    yield from it * multiplier
+    yield from map(lambda x: x * multiplier, it)
+
 
 def hailstone(n):
     """
@@ -119,5 +128,11 @@ def hailstone(n):
     1
     """
     "*** YOUR CODE HERE ***"
-
-
+    if n == 1:
+        yield n
+    elif n % 2 == 0:
+        print(n)
+        yield from hailstone(n//2)
+    else:
+        print(n)
+        yield from hailstone(n*3 + 1)
